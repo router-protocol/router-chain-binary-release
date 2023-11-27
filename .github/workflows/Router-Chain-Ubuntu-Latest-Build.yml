@@ -1,0 +1,105 @@
+name: Router-chain-ubuntu-22.04-Build
+
+on:
+  workflow_dispatch:
+    inputs:
+      version:
+        description: 'Router chain version (e.g., v1.0.0)'
+        required: true
+      releaseName:
+        description: 'Release name (e.g., v1.0.0)'
+        required: true
+
+jobs:
+  setup:
+    runs-on: ubuntu-22.04
+    steps:
+      - name: Set up Go
+        uses: actions/setup-go@v3
+        with:
+          go-version: '1.20'
+
+  build-router-chain:
+    needs: setup
+    runs-on: ubuntu-22.04
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          repository: 'router-protocol/router-chain'
+          ref: 'dev'
+          path: 'router-chain'
+          token: ${{ secrets.USER_GITHUB_TOKEN }}
+
+      - name: Build router-chain
+        run: |
+          echo "🛠️ Building router-chain binary"
+          cd router-chain
+          go mod download
+          WASMVM_VERSION=$(go list -m github.com/CosmWasm/wasmvm | cut -d ' ' -f 2) && \
+          wget https://github.com/CosmWasm/wasmvm/releases/download/$WASMVM_VERSION/libwasmvm_muslc.$(uname -m).a -O /lib/libwasmvm_muslc.a && \
+          wget https://github.com/CosmWasm/wasmvm/releases/download/$WASMVM_VERSION/checksums.txt -O /tmp/checksums.txt && \
+          sha256sum /lib/libwasmvm_muslc.a | grep $(cat /tmp/checksums.txt | grep $(uname -m) | cut -d ' ' -f 1)
+          git config --global user.name "Router Protocol"
+          git config --global user.email "infra@routerprotocol.com"
+          git tag ${{ github.event.inputs.version }}
+          go mod tidy
+          make build
+          echo "routerd build successful"
+          cd ./bin
+          mkdir -p ${{ github.workspace }}/router-chain-binaries/
+          cp routerd ${{ github.workspace }}/router-chain-binaries/
+          cd ${{ github.workspace }}/router-chain-binaries/
+          tar -czvf routerd.tar.gz routerd
+          echo "🔥 routerd.tar.gz created"
+    
+      - name: Archive router-chain binary
+        uses: actions/upload-artifact@v2
+        with:
+          name: router-chain
+          path: ${{ github.workspace }}/router-chain-binaries/router-chain.tar.gz
+
+  package-and-push:
+    needs: [build-router-chain]
+    runs-on: ubuntu-22.04
+    steps:
+      - name: Download router-chain binary
+        uses: actions/download-artifact@v2
+        with:
+          name: router-chain
+          path: ${{ github.workspace }}/router-chain-binaries/
+      - uses: actions/checkout@v3
+        with:
+          repository: 'router-protocol/rc-test-rele'
+          ref: 'main'
+          path: 'rc-releases'
+          token: ${{ secrets.USER_GITHUB_TOKEN }}
+      - name: Package and Push new binaries to the current repository
+        run: |
+          cd rc-releases
+          git config --global url."https://anubhavrouter:${{secrets.USER_GITHUB_TOKEN}}@github.com/".insteadOf "https://github.com/"
+          git config user.name "Router Protocol"
+          git config user.email "infra@routerprotocol.com"
+          mv ${{ github.workspace }}/router-chain-binaries/router-chain.tar.gz ./linux/
+          git add linux/router-chain.tar.gz
+          git commit -m "Latest router-chain executable updated: $(date +'%Y-%m-%d %H:%M:%S')"
+          git push
+  tag-release:
+    needs: package-and-push
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+      
+      - name: Configure Git
+        run: |
+          git config user.name "Router Protocol"
+          git config user.email "infra@routerprotocol.com"
+
+      - name: Tag Release
+        run: |
+          git tag -a ${{ github.event.inputs.version }} -m "${{ github.event.inputs.releaseName }}"
+          git push origin ${{ github.event.inputs.version }}
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
