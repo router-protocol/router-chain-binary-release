@@ -52,6 +52,9 @@ jobs:
           mkdir -p ${{ github.workspace }}/router-chain-binaries/
           mv routerd.tar.gz ${{ github.workspace }}/router-chain-binaries/
           echo "🔥 routerd.tar.gz created"
+          echo "🔥 routerd.tar.gz moved to ${{ github.workspace }}/router-chain-binaries/"
+          cd ${{ github.workspace }}/router-chain-binaries/
+          ls -al
     
       - name: Archive router-chain binary
         uses: actions/upload-artifact@v2
@@ -68,6 +71,7 @@ jobs:
         with:
           name: router-chain
           path: ${{ github.workspace }}/router-chain-binaries/
+
       - uses: actions/checkout@v3
         with:
           repository: 'router-protocol/router-chain-binary-release'
