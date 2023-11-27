@@ -50,7 +50,7 @@ jobs:
           ls -al
           tar -czvf routerd.tar.gz routerd
           mkdir -p ${{ github.workspace }}/router-chain-binaries/
-          mv routerd ${{ github.workspace }}/router-chain-binaries/
+          mv routerd.tar.gz ${{ github.workspace }}/router-chain-binaries/
           echo "🔥 routerd.tar.gz created"
     
       - name: Archive router-chain binary
