@@ -60,7 +60,7 @@ jobs:
         uses: actions/upload-artifact@v2
         with:
           name: router-chain
-          path: ${{ github.workspace }}/router-chain-binaries/router-chain.tar.gz
+          path: ${{ github.workspace }}/router-chain-binaries/routerd.tar.gz
 
   package-and-push:
     needs: [build-router-chain]
@@ -86,6 +86,7 @@ jobs:
           git config user.name "Router Protocol"
           git config user.email "infra@routerprotocol.com"
           ls -al ${{ github.workspace }}/router-chain-binaries/
+          mkdir -p linux
           mv ${{ github.workspace }}/router-chain-binaries/routerd.tar.gz ./linux/
           git add linux/routerd.tar.gz
           git commit -m "Latest router-chain executable updated: $(date +'%Y-%m-%d %H:%M:%S')"
