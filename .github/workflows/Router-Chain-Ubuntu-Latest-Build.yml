@@ -46,10 +46,11 @@ jobs:
           make build
           echo "routerd build successful"
           cd ./bin
-          mkdir -p ${{ github.workspace }}/router-chain-binaries/
-          cp routerd ${{ github.workspace }}/router-chain-binaries/
-          cd ${{ github.workspace }}/router-chain-binaries/
+          echo "pwd: $(pwd)"
+          ls -al
           tar -czvf routerd.tar.gz routerd
+          mkdir -p ${{ github.workspace }}/router-chain-binaries/
+          mv routerd ${{ github.workspace }}/router-chain-binaries/
           echo "🔥 routerd.tar.gz created"
     
       - name: Archive router-chain binary
@@ -69,13 +70,13 @@ jobs:
           path: ${{ github.workspace }}/router-chain-binaries/
       - uses: actions/checkout@v3
         with:
-          repository: 'router-protocol/rc-test-rele'
+          repository: 'router-protocol/router-chain-binary-release'
           ref: 'main'
-          path: 'rc-releases'
+          path: 'router-chain-binary-release'
           token: ${{ secrets.USER_GITHUB_TOKEN }}
       - name: Package and Push new binaries to the current repository
         run: |
-          cd rc-releases
+          cd router-chain-binary-release
           git config --global url."https://anubhavrouter:${{secrets.USER_GITHUB_TOKEN}}@github.com/".insteadOf "https://github.com/"
           git config user.name "Router Protocol"
           git config user.email "infra@routerprotocol.com"
@@ -83,6 +84,7 @@ jobs:
           git add linux/router-chain.tar.gz
           git commit -m "Latest router-chain executable updated: $(date +'%Y-%m-%d %H:%M:%S')"
           git push
+
   tag-release:
     needs: package-and-push
     runs-on: ubuntu-latest
