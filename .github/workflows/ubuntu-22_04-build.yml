@@ -2,13 +2,6 @@ name: Router-chain-ubuntu-22.04-Build
 
 on:
   workflow_dispatch:
-    inputs:
-      version:
-        description: "Router chain version (e.g., v1.0.0)"
-        required: true
-      releaseName:
-        description: "Release name (e.g., v1.0.0)"
-        required: true
 
 jobs:
   setup:
@@ -75,7 +68,7 @@ jobs:
       - uses: actions/checkout@v3
         with:
           repository: "router-protocol/router-chain-binary-release"
-          ref: "main"
+          ref: "ubuntu-build"
           path: "rc-releases"
           token: ${{ secrets.USER_GITHUB_TOKEN }}
 
@@ -91,24 +84,3 @@ jobs:
           git add linux/routerd.tar.gz
           git commit -m "Latest router-chain executable updated: $(date +'%Y-%m-%d %H:%M:%S')"
           git push
-
-  tag-release:
-    needs: package-and-push
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v3
-        with:
-          fetch-depth: 0
-
-      - name: Configure Git
-        run: |
-          git config user.name "Router Protocol"
-          git config user.email "infra@routerprotocol.com"
-
-      - name: Tag Release
-        run: |
-          git tag -a ${{ github.event.inputs.version }} -m "${{ github.event.inputs.releaseName }}"
-          git push origin ${{ github.event.inputs.version }}
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
