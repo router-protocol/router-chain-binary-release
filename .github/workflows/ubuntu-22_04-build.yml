@@ -2,6 +2,10 @@ name: Router-chain-ubuntu-22.04-Build
 
 on:
   workflow_dispatch:
+    inputs:
+      version:
+        description: 'Tag binary version'
+        required: true
 
 jobs:
   setup:
