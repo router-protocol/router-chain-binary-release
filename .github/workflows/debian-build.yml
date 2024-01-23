@@ -2,6 +2,10 @@ name: Router-chain-debian-build
 
 on:
   workflow_dispatch:
+    inputs:
+      version:
+        description: 'Tag binary version'
+        required: true
 
 jobs:
   setup:
