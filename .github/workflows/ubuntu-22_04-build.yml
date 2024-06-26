@@ -79,7 +79,7 @@ jobs:
       - name: Package and Push new binaries to the current repository
         run: |
           cd rc-releases
-          git config --global url."https://anubhavrouter:${{secrets.USER_GITHUB_TOKEN}}@github.com/".insteadOf "https://github.com/"
+          git config --global url."https://ganesh_bhagi:${{secrets.USER_GITHUB_TOKEN}}@github.com/".insteadOf "https://github.com/"
           git config user.name "Router Protocol"
           git config user.email "infra@routerprotocol.com"
           ls -al ${{ github.workspace }}/router-chain-binaries/
