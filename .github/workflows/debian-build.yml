@@ -12,7 +12,7 @@ jobs:
     runs-on: ubuntu-20.04
     steps:
       - name: Set up Go
-        uses: actions/setup-go@v3
+        uses: actions/setup-go@v4
         with:
           go-version: "1.21.0"
 
@@ -20,7 +20,7 @@ jobs:
     needs: setup
     runs-on: ubuntu-20.04
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
         with:
           repository: "router-protocol/router-chain"
           ref: "main"
@@ -69,7 +69,7 @@ jobs:
           name: router-chain
           path: ${{ github.workspace }}/router-chain-binaries/
 
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
         with:
           repository: "router-protocol/router-chain-binary-release"
           ref: "debian-build"
