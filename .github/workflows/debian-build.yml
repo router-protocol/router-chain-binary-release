@@ -9,7 +9,7 @@ on:
 
 jobs:
   setup:
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-20.04
     steps:
       - name: Set up Go
         uses: actions/setup-go@v4
@@ -18,9 +18,7 @@ jobs:
 
   build-router-chain:
     needs: setup
-    runs-on: ubuntu-22.04
-    container:
-      image: golang:1.21-bullseye
+    runs-on: ubuntu-20.04
     steps:
       - uses: actions/checkout@v4
         with:
@@ -37,8 +35,7 @@ jobs:
           WASMVM_VERSION=$(go list -m github.com/CosmWasm/wasmvm | cut -d ' ' -f 2) && \
           wget https://github.com/CosmWasm/wasmvm/releases/download/$WASMVM_VERSION/libwasmvm_muslc.$(uname -m).a -O /lib/libwasmvm_muslc.a && \
           wget https://github.com/CosmWasm/wasmvm/releases/download/$WASMVM_VERSION/checksums.txt -O /tmp/checksums.txt && \
-          # sha256sum /lib/libwasmvm_muslc.a | grep $(cat /tmp/checksums.txt | grep $(uname -m) | cut -d ' ' -f 1)
-          sha256sum /lib/libwasmvm_muslc.a | grep $(grep $(uname -m) /tmp/checksums.txt | cut -d ' ' -f 1)
+          sha256sum /lib/libwasmvm_muslc.a | grep $(cat /tmp/checksums.txt | grep $(uname -m) | cut -d ' ' -f 1)
           git config --global user.name "Router Protocol"
           git config --global user.email "infra@routerprotocol.com"
           git tag ${{ github.event.inputs.version }}
@@ -64,7 +61,7 @@ jobs:
 
   package-and-push:
     needs: [build-router-chain]
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-20.04
     steps:
       - name: Download router-chain binary
         uses: actions/download-artifact@v4
