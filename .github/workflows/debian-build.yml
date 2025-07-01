@@ -8,21 +8,20 @@ on:
         required: true
 
 jobs:
-  build-router-chain:
+  setup:
     runs-on: ubuntu-22.04
-    container: debian:11
     steps:
-      - name: Install dependencies
-        run: |
-          apt-get update
-          apt-get install -y wget git build-essential curl ca-certificates
-
       - name: Set up Go
-        run: |
-          wget https://go.dev/dl/go1.21.0.linux-amd64.tar.gz
-          tar -C /usr/local -xzf go1.21.0.linux-amd64.tar.gz
-          echo "/usr/local/go/bin" >> $GITHUB_PATH
+        uses: actions/setup-go@v4
+        with:
+          go-version: "1.21.0"
 
+  build-router-chain:
+    needs: setup
+    runs-on: ubuntu-22.04
+    container:
+      image: debian:bullseye
+    steps:
       - uses: actions/checkout@v4
         with:
           repository: "router-protocol/router-chain"
@@ -32,7 +31,6 @@ jobs:
 
       - name: Build router-chain
         run: |
-          export PATH=$PATH:/usr/local/go/bin
           echo "🛠️ Building router-chain binary"
           cd router-chain
           go mod download
