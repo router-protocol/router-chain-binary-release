@@ -20,7 +20,7 @@ jobs:
     needs: setup
     runs-on: ubuntu-22.04
     container:
-      image: debian:bullseye
+      image: golang:1.21-bullseye
     steps:
       - uses: actions/checkout@v4
         with:
